@@ -46,7 +46,7 @@ const initiateSTKPush = async (
 		PartyA: formattedPhone,
 		PartyB: SHORT_CODE,
 		PhoneNumber: formattedPhone,
-		CallBackURL: "https://mydomain.com/callback-url-path",
+		CallBackURL: "https://daraja-lemon.vercel.app/callback",
 		AccountReference: formattedPhone,
 		TransactionDesc: "Test",
 	}
