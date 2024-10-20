@@ -4,7 +4,7 @@
     <label for="mpesa_number">
         Mpesa Number{" "}
       </label>
-    <input type="text" name="mpesa_number" id="">
+    <input type="text" name="phoneNumber" id="">
     <label for="amount">
         {" "}
         Amount{" "}

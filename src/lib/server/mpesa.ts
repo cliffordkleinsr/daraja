@@ -1,8 +1,9 @@
-import { CONSUMER_KEY, CONSUMER_SECRET, PASS_KEY, SHORT_CODE } from '$env/static/private';
+import { CONSUMER_KEY, CONSUMER_SECRET, INITIATOR_NAME, PASS_KEY, SECURITY_CREDENTIAL, SHORT_CODE } from '$env/static/private';
 import axios from 'axios'
+import cert from '$lib/certificates/ProductionCertificate.cer?raw'
 
 const getToken = async () => {
-	const url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+	const url = 'https://api.safaricom.co.ke/oauth/v2/generate?grant_type=client_credentials';
 	const credentials = Buffer.from(CONSUMER_KEY + ':' + CONSUMER_SECRET).toString('base64');
 
 	const res = await axios.get(url, {
@@ -17,13 +18,14 @@ const getToken = async () => {
 };
 
 
+// Doesnt work with devt
 const initiateSTKPush = async (
 	amount: string,
 	phoneNumber: string,
 	name: string
 ) => {
 	const token = await getToken();
-	const url = "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+	const url = "https://api.safaricom.co.ke/mpesa/stkpush/v2/processrequest";
 	const cleanedNumber = phoneNumber.replace(/\D/g, "");
  
     const formattedPhone = `254${cleanedNumber.slice(-9)}`
@@ -73,4 +75,46 @@ const initiateSTKPush = async (
 	}
 };
 
-export { initiateSTKPush}
+interface Params {
+	name:string
+	amount: string
+	phoneNumber:string,
+	// remarks:string
+}
+
+
+
+const initiateB2C = async (body: Params) => {
+	const { amount, phoneNumber} = body
+	const cleanedNumber = phoneNumber.replace(/\D/g, "");
+	const formattedPhone = `254${cleanedNumber.slice(-9)}`
+	let ConversationID = crypto.randomUUID()
+	const url = 'https://api.safaricom.co.ke/mpesa/b2c/v3/paymentrequest'
+	const token = await getToken()
+	const requestBody = { 
+			OriginatorConversationID: ConversationID,
+			InitiatorName: INITIATOR_NAME,
+			SecurityCredential:SECURITY_CREDENTIAL,
+			CommandID:"BusinessPayment",
+			Amount: amount,
+			PartyA:SHORT_CODE,
+			PartyB:formattedPhone,
+			Remarks:"here are my remarks",
+			QueueTimeOutURL:"https://mydomain.com/b2c/queue",
+			ResultURL:"https://mydomain.com/b2c/result",
+			Occassion:"Christmas"
+	}
+
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${token}`,
+			'Content-Type': 'application/json'	
+		},
+		body: JSON.stringify(requestBody)
+	})
+
+	const data = await res.json()
+	return data
+}
+export { initiateSTKPush, initiateB2C}

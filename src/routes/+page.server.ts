@@ -1,4 +1,4 @@
-import { initiateSTKPush } from '$lib/server/mpesa';
+import { initiateB2C, initiateSTKPush } from '$lib/server/mpesa';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async () => {
@@ -7,19 +7,20 @@ export const load = (async () => {
 
 export const actions: Actions = {
     default: async ({request}) => {
-        type En = {
-            name: string
-            mpesa_number: string
+        type Params = {
+            name:string
             amount: string
+            phoneNumber:string,
+            // remarks:string
         }
-        const formData =  Object.fromEntries(await request.formData()) as En
+        const formData =  Object.fromEntries(await request.formData()) as Params
         
-        const {name, mpesa_number, amount} = formData
+        const {phoneNumber} = formData
         const kenyanPhoneNumberRegex = /^(07\d{8}|01\d{8}|2547\d{8}|2541\d{8}|\+2547\d{8}|\+2541\d{8})$/;
 
-        if (!kenyanPhoneNumberRegex.test(mpesa_number)) return alert("Invalid mpesa number")
+        if (!kenyanPhoneNumberRegex.test(phoneNumber)) return console.error("Invalid mpesa number")
             
-        const data = await initiateSTKPush(amount, mpesa_number, name)
+        const data = await initiateB2C(formData)
 
         console.log(data)
         // alert("stk push sent successfully")

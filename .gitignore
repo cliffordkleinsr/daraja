@@ -22,3 +22,4 @@ vite.config.ts.timestamp-*
 bun.lockb
 .prettierrc
 .prettierignore
+src/lib/certificates/ProductionCertificate.cer
